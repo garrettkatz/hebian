@@ -1,0 +1,28 @@
+Press+hold battery button to turn on.  router will turn on but not computer.  press computer power button on chassis to get computer up.
+IPs: 10.10.1.1 router 10.10.1.2 computer
+
+Network credentials on chassis said uname/pw=hebirobot/hebi1234, but that didn't work.  hebi/hebi1234 worked.  Actually, hebirobot was the computer name, not the username.
+
+if you "sudo shutdown -h now," the red power button on chassis will soon turn off.  Then you can turn off battery.
+
+Setting up MobileIO:
+
+install app from app store
+
+startup the battery, computer, and actuators
+
+ssh onto computer, launch python, and do:
+
+>>> import hebi
+matplotlib not found - hebi.util.plot_logs and hebi.util.plot_trajectory will not work.
+pynput not found - HebiKeyboard will not work
+>>> lookup = hebi.Lookup()
+>>> lookup
+
+This will show you the family (for Rosie it was "Rosie").
+
+Connect to the network name of the robot (sticker on top or bottom of chassis) from your mobile device.
+
+In the settings of the app, update the Family field and press "update".  It will automatically launch the demo.
+
+On iPhone, the app layout is too constrained and you can't actually touch the "translate" button for the mobile base.  Needs an iPad.  Press the X button to end the demo.  It will automatically restart after several seconds unless you change the Family name back to something different.

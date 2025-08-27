@@ -1,0 +1,140 @@
+Reference material: https://docs.hebi.us/tools.html
+Support (please cc me): support@hebirobotics.com
+
+Getting Started:
+
+1. Install the HEBI python API: https://docs.hebi.us/tools.html#installationproject-integration
+
+1. Install and launch Scope: https://docs.hebi.us/downloads_changelogs.html
+
+2. On the dashboard tab, click "Imitation Devices."  Select "5-6 DoF" and "Omni wheel."
+
+3. On the monitoring tab, first shift+select devices IM-1 through IM-6 on the left, then click "HRDF View."  This button may be greyed out if you are on a non-supported system.  In the file browser, choose the included "A-2240-06G.hrdf" file, also available here:
+
+https://github.com/HebiRobotics/hebi-cpp-examples/blob/iamtesch/more-rosie-cleanup/kits/arm/config/hrdf/A-2240-06G.hrdf
+
+4. A 3D rendering window should appear showing the arm.  Back in the Scope monitoring tab, select one imitation device only (e.g. J3_elbow), click the "position" checkbox, and use the slider to change the elbow angle.  The arm in the visualization should move accordingly.  You can also multi-select joints again to control all of them simultaneously.
+
+5. If you click the "position" button (not checkbox), you also get a real-time plot of the selected joint positions.
+
+6. While the imitation devices in scope are running, you can use the following python commands in another tab to send a position control command.  You should see the arm position change in the visualizer when you do this.
+
+    >>> import numpy as np
+    >>> import hebi
+    >>> lookup = hebi.Lookup()
+    >>> lookup
+    lookup_frequency: 5.0
+    
+    Module  Family            Name          
+    ------  ----------------  --------------
+    0       HEBI              W3            
+    1       HEBI              W2            
+    2       HEBI              W1            
+    3       HEBI              gripperSpool  
+    4       HEBI              J6_wrist3     
+    5       HEBI              J5_wrist2     
+    6       HEBI              J4_wrist1     
+    7       HEBI              J3_elbow      
+    8       HEBI              J2_shoulder   
+    9       HEBI              J1_base       
+    
+    >>> group = lookup.get_group_from_names(['HEBI'], ['J1_base','J2_shoulder','J3_elbow','J4_wrist1','J5_wrist2','J6_wrist3'])
+    >>> group
+    feedback_frequency: 100.0 [Hz]
+      command_lifetime: 0.25 [s]
+                  size: 6
+    
+    >>> group_command = hebi.GroupCommand(group.size)
+    >>> group_command.position = np.random.randn(group.size)
+    >>> group.send_command(group_command) # watch the visualization change when you execute this
+    True
+
+You can also get feedback from the device to see current joint states:
+
+    >>> print(group_command.position)
+    [ 1.30737698 -0.01081329  2.42351294  0.24353133  0.71963048 -0.0408705 ]
+    >>> group_feedback = hebi.GroupFeedback(group.size)
+    >>> group_feedback = group.get_next_feedback(reuse_fbk=group_feedback)
+    >>> current_position = group_feedback.position
+    >>> print(current_position)
+    [ 1.30737698 -0.01081329  2.42351294  0.24353133  0.71963048 -0.0408705 ]
+
+You can also smoothly interpolate a trajectory between waypoints, requesting zero velocity and acceleration at the waypoints:
+
+    >>> from time import sleep
+    >>> target = np.random.randn(group.size)
+    >>> pos = np.stack([current_position, target])
+    >>> vel = np.zeros(pos.shape)
+    >>> acc = np.zeros(pos.shape)
+    >>> timepoints = np.array([0., 10.])
+    >>> trajectory = hebi.trajectory.create_trajectory(timepoints, pos.T, vel.T, acc.T)
+    >>> t = 0.0
+    >>> while (t < duration):
+    ...     pos, vel, _ = trajectory.get_state(t)
+    ...     cmd.position, cmd.velocity = pos, vel
+    ...     group.send_command(cmd)
+    ...     t += period
+    ...     sleep(period)
+    ... 
+
+You should see the arm move gradually through the trajectory in the visualization.
+
+Forward kinematics:
+
+>>> arm = hebi.robot_model.import_from_hrdf("A-2240-06G.hrdf")
+>>> arm
+RobotModel with properties:
+
+    body_count: 12
+     dof_count: 6
+          mass: 5.55 [kg]
+
+    body  type             is_dof  mass [kg]
+    ----  ---------------  ------  ---------
+    0     R8-16            false      0.7150
+    1     Bracket          false      0.2120
+    2     R8-16            false      0.7150
+    3     Link             false      0.3290
+    4     R8-16            false      0.7150
+    5     Link             false      0.3290
+    6     R8-3             false      0.6700
+    7     Bracket          false      0.1400
+    8     R8-3             false      0.6700
+    9     Bracket          false      0.1400
+    10    R8-3             false      0.6700
+    11    End Effector     false      0.2464
+
+>>> group_feedback = group.get_next_feedback(reuse_fbk=group_feedback)
+>>> current_position = group_feedback.position
+>>> transforms = arm.get_forward_kinematics('output', current_position)
+>>> transforms[-1]
+array([[ 0.64512416,  0.34020528, -0.6841602 ,  0.5707611 ],
+       [ 0.763873  , -0.30789216,  0.56718644, -0.02887958],
+       [-0.01768774, -0.88851718, -0.4585023 ,  0.07728135],
+       [ 0.        ,  0.        ,  0.        ,  1.        ]])
+
+Upper left 3x3 is the orientation matrix, upper right 3x1 is the 3D position of the last link (should be right between the grippers).
+
+Using inverse kinematics to keep the gripper at the same position but invert its orientation with transpose:
+
+>>> target_xyz = transforms[-1][:3,3]
+>>> target_so3 = transforms[-1][:3,:3].T
+>>> end_effector_position_objective = hebi.robot_model.endeffector_position_objective(target_xyz)
+>>> end_effector_orientation_objective = hebi.robot_model.endeffector_so3_objective(target_so3)
+>>> ik_result_joint_angles = arm.solve_inverse_kinematics(current_position, end_effector_position_objective, end_effector_orientation_objective)
+>>> group_command.position = ik_result_joint_angles
+>>> group.send_command(group_command)
+
+The visualized arm should be in a new position with the gripper oriented differently but located at the same point.
+
+Questions for HEBI:
+
+Velocity/effort control not supported in the scope visualization?
+
+I have matplotlib (maybe not package manager install), but get the error "matplotlib not found - hebi.util.plot_logs and hebi.util.plot_trajectory will not work."  Any way to show hebi-py where to look?
+
+Not sure, but it looks like trajectory code doesn't actually end near target?
+
+Gripper spool does not control gripper in visualization?
+
+
