@@ -26,3 +26,81 @@ Connect to the network name of the robot (sticker on top or bottom of chassis) f
 In the settings of the app, update the Family field and press "update".  It will automatically launch the demo.
 
 On iPhone, the app layout is too constrained and you can't actually touch the "translate" button for the mobile base.  Needs an iPad.  Press the X button to end the demo.  It will automatically restart after several seconds unless you change the Family name back to something different.
+
+To access the internet from the robot when connected by ethernet to an internet-enabled university computer:
+
+Computer X is the university enabled computer, Computer Y is the robot's computer, and they should be connected by an ethernet cable.
+
+This process configures your computers so that X acts as a router, and Y uses X as its gateway to the internet. This is a system-wide solution that does not interfere with SSH sessions.
+
+Step 1: Identify network interfaces on computer X
+
+On computer X, open a terminal and run ip a to list your network interfaces. You need to identify two interfaces: 
+
+    The external interface (<external_if>) that is connected to the internet (e.g., eth0 or wlan0).
+    The local interface (<local_if>) that is directly connected to computer Y (e.g., eth1).
+
+    The local_if will likely have "10.10.1.X" appearing in its information, whereas external_if will have 128.230.X.X.
+
+Step 2: Configure computer X (the internet gateway)
+
+Execute the following commands on computer X, replacing <external_if> and <local_if> with your interface names.
+
+    Assign a static IP address to the local interface: This will be Y's default gateway. The 192.168.10.1 address is an example of a private IP you can use.
+
+    sudo ip addr add 192.168.10.1/24 dev <local_if>
+
+
+Enable IP forwarding: This allows the kernel to pass packets between network interfaces.
+
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+To make this permanent, edit /etc/sysctl.conf and uncomment the line net.ipv4.ip_forward=1, then run sudo sysctl -p.
+
+Set up NAT (Masquerading): Use iptables to translate the source IP address of traffic from Y so it appears to originate from X. This is what allows Y to share X's internet connection.
+
+    sudo iptables -t nat -A POSTROUTING -o <external_if> -j MASQUERADE
+
+Allow forwarded traffic: Set up the firewall to accept forwarded packets.
+
+    sudo iptables -A FORWARD -i <external_if> -o <local_if> -m state --state RELATED,ESTABLISHED -j ACCEPT
+    sudo iptables -A FORWARD -i <local_if> -o <external_if> -j ACCEPT
+
+Save the iptables rules (optional, but recommended): This prevents the rules from being lost on reboot. Install iptables-persistent if you don't have it.
+
+    sudo apt-get install iptables-persistent
+    sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+
+Step 3: Configure computer Y (the client)
+
+Execute the following commands on computer Y, replacing <local_if> with its ethernet interface name.
+
+    Assign a static IP address: Set an IP address in the same subnet as X's local interface.
+
+    sudo ip addr add 192.168.10.2/24 dev <local_if>
+
+Set the default gateway: Tell computer Y to send all internet-bound traffic to computer X's local IP address.
+
+    sudo ip route add default via 192.168.10.1
+
+Set DNS resolution: Configure Y to use a public DNS server, like Google's 8.8.8.8.
+
+    echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+Confirm the settings (optional): You can view the new routing table.
+
+    ip route
+
+Step 4: Test the connection
+Once all steps are complete, you should be able to access the internet from computer Y, even within an SSH session.
+
+    From computer Y, try to ping a website:
+
+    ping google.com
+
+Now you are done, you should be able to install software, etc. with commands like
+
+    sudo apt-get update
+
+This NAT setup ensures that all outbound traffic from Y is transparently routed through X, fulfilling your requirement for apt-get and other commands, regardless of how you are connected to Y. 
+
