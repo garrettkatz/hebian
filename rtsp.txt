@@ -4,12 +4,12 @@ SSH onto the robot computer and run ./mediamtx in the Downloads/mediamtx folder.
 
 SSH again to make a new terminal, and use ffmpeg to stream the webcam feed into the server with a command like:
 
-    ffmpeg -f v4l2 -framerate 30 -video_size 1280x720 -i /dev/video0 -c:v libx264 -preset veryfast -tune zerolatency -b:v 1000k -f rtsp -rtsp_transport tcp rtsp://10.10.1.2:8554/webCamStream
+    ffmpeg -f v4l2 -framerate 30 -video_size 1280x720 -i /dev/video0 -c:v libx264 -preset veryfast -tune zerolatency -b:v 1000k -f rtsp -rtsp_transport tcp rtsp://10.10.1.2:8554/cam
 
-Change the framerate and "webCamStream" to another name if you want.
+Change the framerate and "cam" to another name if you want.
 
 From the computer where you want to view the stream, first make sure your network is setup.  E.g. on surface tablet, I just connected to the Rosie-Syracuse-2 wifi network (pw hebi1234).  For an ubuntu machine with wired ethernet, see networking.txt (you would have already done this for ssh).  On surface, VLC worked; do "Media" -> Open Network Stream" and put the same address as the end of the ffmpeg command above.  On linux, VLC did not work but there may be configuration you can fix.  Alternatively, ffplay worked:
 
-    ffplay rtsp://10.10.1.2:8554/webCamStream
+    ffplay rtsp://10.10.1.2:8554/cam
 
 An example video demonstrating rtsp is in Downloads and on OneDrive MyFiles.
