@@ -138,3 +138,6 @@ Not sure, but it looks like trajectory code doesn't actually end near target?
 Gripper spool does not control gripper in visualization?
 
 
+First iPad config:
+passcode is 123456
+
