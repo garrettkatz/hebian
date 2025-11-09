@@ -158,3 +158,21 @@ https://mikrotik.com/download
 Clicked Neighbors tab, refresh, and some MAC addresses showed.  Neither was exact match for above though... closest one ended in C6 instead of C2.  You tried it anyway - selected it, clicked connect, entered same uname:pw (admin:hebi1234).
 
 You also tried the second MAC address which appears to be the "bridge" and still has the name "Rosie-Syracuse-1" attached to it.  but in either case, you don't see how to connect the router to another network, either CASM or AirOrange; they are not showing up in any lists.  Come back to this later.
+
+The 5hpac-d appears to be the wireless board whereas the other appears to be the ethernet switch without wireless.  Unfortunately, you can't connect to it.  Turned out if you disable windows firewall, you can.
+
+Following the guide seems to work.  There were two CASM networks, you chose the one with greater signal strength.
+
+Security profile: dynamic keys mode, authetication type wpa2-psk, and casm password in wpa2 pre-shared key field
+
+when on casm, your lightop ip address inet is 10.30.86.222/24.  Your ip route is default via 10.30.86.1, also says 10.30.86.0/24 dev wlp1s0 proto...
+
+********* DAISY **************
+
+Initially setting daisy leg angles:
+according to kits/daisy/components/Leg.py, the angles depend on left vs right side and are:
+left:  .2, -.3, -1.9
+right: .2, +.3, +1.9
+right legs are even numbers 2,4,6, and left are odd 1,3,5, according to hardware manual figure
+physical hardware seems to match, but when you form a group you need to list the joint names in the order you want or else they may not correspond to array indices in position vectors
+need a script to help with this
