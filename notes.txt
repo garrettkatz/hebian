@@ -167,6 +167,12 @@ Security profile: dynamic keys mode, authetication type wpa2-psk, and casm passw
 
 when on casm, your lightop ip address inet is 10.30.86.222/24.  Your ip route is default via 10.30.86.1, also says 10.30.86.0/24 dev wlp1s0 proto...
 
+the ipad address assigned was 10.30.86.246, subnet mask is 255.255.255.0
+
+when you factory reset, the router password is an empty string.  reset to hebi1234.
+
+You had to get on a hebi call to open the chassis and fix a completely broken networking setup.  After that you forgot to assign the computer a static ip, but you can still use ssh hebi@hebirobot
+
 ********* DAISY **************
 
 Initially setting daisy leg angles:
