@@ -5,6 +5,8 @@ Network credentials on chassis said uname/pw=hebirobot/hebi1234, but that didn't
 
 if you "sudo shutdown -h now," the red power button on chassis will soon turn off.  Then you can turn off battery.
 
+if you cannot ssh in with hebi@hebirobot, try hebi@10.10.1.2, and make sure you are still on the robot's router network (sometimes labtop automatically switches back to AirOrangeX).
+
 Setting up MobileIO:
 
 install app from app store
