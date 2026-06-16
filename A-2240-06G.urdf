@@ -17,7 +17,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -26,7 +26,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -50,7 +50,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2221-01-Outside.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2221-01-Outside.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -59,7 +59,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2221-01-Outside.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2221-01-Outside.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- inertia is just modelled as small sphere, and could be improved. -->
@@ -82,7 +82,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -91,7 +91,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -116,7 +116,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -125,7 +125,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- Link Pipe -->
@@ -147,7 +147,7 @@
     <visual>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -156,7 +156,7 @@
     <collision>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- Approximate inertia as thin rod about x axis -->
@@ -179,7 +179,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -188,7 +188,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -213,7 +213,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -222,7 +222,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- Link Pipe -->
@@ -244,7 +244,7 @@
     <visual>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -253,7 +253,7 @@
     <collision>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- Approximate inertia as thin rod about x axis -->
@@ -276,7 +276,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -285,7 +285,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -309,7 +309,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -318,7 +318,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- inertia is just modelled as small sphere, and could be improved. -->
@@ -341,7 +341,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -350,7 +350,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -374,7 +374,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -383,7 +383,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <!-- inertia is just modelled as small sphere, and could be improved. -->
@@ -406,7 +406,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -415,7 +415,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -467,7 +467,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0225 0.0225 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2357-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2357-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -476,7 +476,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0225 0.0225 0"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2357-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2357-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -498,7 +498,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.0145 -0.008 0.0038"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2291-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2291-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="silver">
         <color rgba="0.6 0.6 0.6 1"/>
@@ -507,7 +507,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.0145 -0.008 0.0038"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2291-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2291-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -544,7 +544,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="-0.006 -0.0055 -0.0045"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="silver">
         <color rgba="0.6 0.6 0.6 1"/>
@@ -553,7 +553,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="-0.006 -0.0055 -0.0045"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -571,7 +571,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0115 0.029 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -580,7 +580,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0115 0.029 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -597,7 +597,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.006 -0.0115 -0.0036"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -606,7 +606,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.006 -0.0115 -0.0036"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -682,7 +682,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="-0.006 -0.0055 -0.0045"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="silver">
         <color rgba="0.6 0.6 0.6 1"/>
@@ -691,7 +691,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="-0.006 -0.0055 -0.0045"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2221-01.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -709,7 +709,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0115 0.029 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -718,7 +718,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0 0" xyz="-0.0115 0.029 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2358-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -735,7 +735,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.006 -0.0115 -0.0036"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -744,7 +744,7 @@
     <collision>
       <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="-0.006 -0.0115 -0.0036"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2360-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -821,7 +821,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -830,7 +830,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
@@ -853,7 +853,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
@@ -862,7 +862,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="file://C:/Users/suraj/REUPrep/hebian/hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
     <inertial>
