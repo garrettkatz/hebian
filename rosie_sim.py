@@ -1,6 +1,7 @@
 import pybullet as p
 import pybullet_data
 import numpy as np
+import hebi
 import time
 import os
 
@@ -12,81 +13,88 @@ class RosieEnvironment(object):
         """
         # build path to Rosie URDF relative to this script's location so it works from any directory
         fpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "A-2240-06G.urdf")
+        hrdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "A-2240-06G.hrdf")
 
-        # load robot with base fixed at origin
         # enable self-collision detection if requested, otherwise load normally
         flags = p.URDF_USE_SELF_COLLISION if use_self_collision else 0
         robot_id = p.loadURDF(
             fpath,
-            basePosition=[0,0,0],
+            basePosition=[0, 0, 0],
             useFixedBase=True,
             flags=flags
-            )
+        )
+
+        self.arm_model = hebi.robot_model.import_from_hrdf(hrdf_path)
+
         return robot_id
 
-    def __init__(self, use_self_collision=False, show=True):
+    def __init__(self, use_self_collision=False, show=True, spawn_block=False):
         """
         set up the PyBullet simulation
         load the ground plane and Rosie
         query joint info
         """
-        # connect to PyBullet with or without the GUI
         p.connect(p.GUI if show else p.DIRECT)
-        # tell PyBullet where to find built-in assets like plane.urdf
+        p.resetDebugVisualizerCamera(
+            cameraDistance=1.5,
+            cameraYaw=45,
+            cameraPitch=-30,
+            cameraTargetPosition=[0, 0, 0.3]
+        )
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81)
-        # load flat ground plane
         p.loadURDF("plane.urdf")
 
-        # load Rosie's URDF, passing self-collision flag if enabled
         self.robot_id = self._load_urdf(use_self_collision)
         self.num_joints = p.getNumJoints(self.robot_id)
 
-        # enable collision detection between every pair of links on the same body
+        # disable gripper-internal collisions to avoid false positives
+        GRIPPER_LINKS = list(range(12, 25))
         if use_self_collision:
-            for i in range(p.getNumJoints(self.robot_id)):
-                for j in range(p.getNumJoints(self.robot_id)):
-                    p.setCollisionFilterPair(self.robot_id, self.robot_id, i, j, 1)
+            for i in GRIPPER_LINKS:
+                for j in GRIPPER_LINKS:
+                    p.setCollisionFilterPair(self.robot_id, self.robot_id, i, j, 0)
 
-        # containers for joint info
+        # query and store joint info
         self.joint_name = []
         self.joint_index = {}
         self.joint_fixed = []
-        
-        # query and store info for each joint
+
         for i in range(self.num_joints):
             info = p.getJointInfo(self.robot_id, i)
             name = info[1].decode("UTF-8")
             self.joint_name.append(name)
             self.joint_index[name] = i
-            # True if fixed joint, False if actuated
             self.joint_fixed.append(info[2] == p.JOINT_FIXED)
 
-        # store indices of actuated joints only
-        self.actuated_joints = [i for i, name in enumerate(self.joint_name) if name.startswith('J') and self.joint_fixed[i] == False]
+        # store indices of actuated joints only (named 'J1' through 'J6')
+        self.actuated_joints = [i for i, name in enumerate(self.joint_name) if name.startswith('J') and not self.joint_fixed[i]]
 
         # get index of end effector
         self.end_effector_link = self.joint_index[self.joint_name[-1]]
-        
-        self.home_pose = np.array([0, -3.5, 1.0, 0, 0.5, 0])
 
+        # spawn block at known position
+        if spawn_block:
+            block_pos = [0.2717, -0.0342, 0.02]
+            self.block_id = p.loadURDF("cube_small.urdf", basePosition=block_pos)
+            p.changeDynamics(self.block_id, -1, lateralFriction=1000.0)
+            p.changeDynamics(self.robot_id, 16, lateralFriction=1000.0)
+            p.changeDynamics(self.robot_id, 20, lateralFriction=1000.0)
+
+        self.home_pose3 = np.array([0.36322123, -4.00691022, -3.80736215, -4.51284089, -1.57079638, 1.9340176])
+        self.home_pose = np.array([0.36322123, -4.00691022, -4.80736215, -5.51284089, -1.57079638, 1.9340176])
+        
 
     def get_position(self):
-        """
-        return current angles of all actuated joints as a numpy array
-        """
-        # get state tuples for all actuated joints
+        """return current angles of all actuated joints as a numpy array"""
         joint_states = p.getJointStates(self.robot_id, self.actuated_joints)
-        # extract just the position (index 0) from each state tuple
-        joint_positions = np.array([joint_states[i][0] for i in range(len(joint_states))])
-        return joint_positions
-    
+        return np.array([joint_states[i][0] for i in range(len(joint_states))])
+
     def set_position(self, angles):
         """snap all actuated joints instantly to the given angle array (in radians)"""
-        # teleport each actuated joint to its target angle
         for joint_idx, angle in zip(self.actuated_joints, angles):
             p.resetJointState(self.robot_id, joint_idx, angle)
-    
+
     def goto_position(self, target, duration=5.):
         """
         move the arm in a smooth trajectory
@@ -101,29 +109,81 @@ class RosieEnvironment(object):
         # interpolate between current and target to get full trajectory
         trajectory = weights * target + (1 - weights) * current
 
-        # execute trajectory one step at a time
+        # using position control
         for row in trajectory:
-            self.set_position(row)
+            p.setJointMotorControlArray(
+                self.robot_id,
+                jointIndices=self.actuated_joints,
+                controlMode=p.POSITION_CONTROL,
+                targetPositions=row,
+                targetVelocities=[0] * len(self.actuated_joints),
+                positionGains=[0.25] * len(self.actuated_joints),
+            )
             p.stepSimulation()
-            time.sleep(1/240)
+            time.sleep(1 / 240)
 
     def get_ik(self, target_position):
-        """takes an (x, y, z) and returns joint angles"""
-        # build full 25-joint rest pose array with home pose values at actuated joint indices
-        restPoses = [0] * 25
-        for joint_idx, angle in zip(self.actuated_joints, self.home_pose):
-            restPoses[joint_idx] = angle
+        """takes an (x, y, z) and returns joint angles using HEBI IK"""
+        initial_positions = np.array(self.get_position(), dtype=float)
 
-        # IK outputs all 25 joint angles
-        ik_joints = p.calculateInverseKinematics(self.robot_id, self.end_effector_link, target_position, restPoses)
-        # IK returns all 6 actuated joint angles
-        return [ik_joints[i] for i in range(len(self.actuated_joints))]
+        # extract orientation from FK at current pose
+        transform = np.eye(4)
+        self.arm_model.get_end_effector(initial_positions, transform)
+        target_orientation = transform[:3, :3]
+
+        position_objective = hebi.robot_model.endeffector_position_objective(target_position)
+        orientation_objective = hebi.robot_model.endeffector_so3_objective(target_orientation)
+        # print(initial_positions)
+        return self.arm_model.solve_inverse_kinematics(initial_positions, position_objective, orientation_objective)
+
+    def goto_cartesian(self, target_pos, duration=3.0):
+        """move end effector smoothly in cartesian space"""
+        # get current end effector position as starting point for interpolation
+        current_pos = np.array(p.getLinkState(self.robot_id, self.end_effector_link)[0])
+        target_pos = np.array(target_pos)
+
+        # total number of simulation steps for the move
+        num_steps = int(duration * 240)
+        for i in range(num_steps):
+            t = i / num_steps
+            # linearly interpolate between current and target position
+            interp_pos = (1 - t) * current_pos + t * target_pos
+            # solve IK for interpolated position, from current joint state
+            angles = self.get_ik(interp_pos)
+            # apply joint angles using position control
+            p.setJointMotorControlArray(
+                self.robot_id,
+                jointIndices=self.actuated_joints,
+                controlMode=p.POSITION_CONTROL,
+                targetPositions=angles,
+                targetVelocities=[0] * len(self.actuated_joints),
+                positionGains=[0.25] * len(self.actuated_joints), # low gain for smooth motion
+            )
+            # reapply gripper command each step to maintain grip force during motion
+            env3.set_gripper(0.55)
+            p.stepSimulation()
+            time.sleep(1. / 240.)
+
+    def set_gripper(self, value):
+        """set gripper position: -1.0 = open, 1.0 = closed"""
+        for joint in [16, 20]:
+            p.setJointMotorControl2(
+                self.robot_id, joint,
+                controlMode=p.POSITION_CONTROL,
+                targetPosition=value,
+                force=1000
+            )
 
     def check_collision(self):
         """returns True if any collision is detected"""
+        IGNORED_PAIRS = {(6, 8), (8, 10), (11, 13), (11, 17)}
         for c in p.getContactPoints(self.robot_id):
-            # ignore the base resting on floor, this is normal and not a real collision
-            if c[1] == 1 and c[2] == 0 and c[3] == 0 and c[4] == -1:
+            link_a, link_b = c[3], c[4]
+            # ignore base resting on floor
+            if c[2] == 0 and link_b == -1 and link_a == 0:
+                continue
+            # ignore permanent structural contacts
+            if (min(link_a, link_b), max(link_a, link_b)) in IGNORED_PAIRS:
                 continue
             return True
         return False
@@ -132,47 +192,94 @@ class RosieEnvironment(object):
         """disconnects from PyBullet to avoid memory leaks"""
         p.disconnect()
 
+
 if __name__ == '__main__':
-        # env1 uses default collision detection (floor only)
-        env1 = RosieEnvironment()
-        rng = np.random.default_rng()
+    rng = np.random.default_rng()
 
-        # iterates through 10 IK poses, detects floor collision
-        for i in range(10):
-            random_position = rng.random(3)
-            angles = env1.get_ik(random_position)
-            env1.set_position(angles)
-            for _ in range(100):
-                p.stepSimulation()
-                time.sleep(1./240.)
-            print(f"Target position: {random_position}")
-            if env1.check_collision():
-                print("Collision Detected")
-            else:
-                print("No collision")
-            input("Press Enter to continue")
-        env1.close()
+    # random IK poses with collision detection
+    env1 = RosieEnvironment(use_self_collision=True)
+    env1.set_position(env1.home_pose)
 
-        # env2 uses URDF_USE_SELF_COLLISION to detect arm self-collisions
-        env2 = RosieEnvironment(use_self_collision=True)
-        # hardcoded poses that trigger base and self-collisions
-        hardcoded_poses = [
-            # base collision
-            np.array([-1.15856693, -2.30733897, -3.02441003, 2.19252047, 0.30061921, 0.53673647]),
-            # self-collision
-            np.array([-1.52050829,  2.42421686, -1.00946527, -1.7535704, 0.76910796, 0.89692566])
-        ]
+    for i in range(10):
+        random_position = np.array([
+            rng.uniform(-0.5, 0.5),   # X: left and right
+            rng.uniform(-0.5, 0.5),   # Y: forward and back
+            rng.uniform(0.01, 0.6),   # Z: allow near-floor targets
+        ])
+        angles = env1.get_ik(random_position)
+        env1.set_position(angles)
+        for _ in range(1000):
+            p.stepSimulation()
+            time.sleep(1. / 240.)
+        print(f"Target position: {random_position}")
+        if env1.check_collision():
+            print("Collision Detected")
+        else:
+            print("No collision")
+        input("Press Enter to continue")
 
-        # iterates through hardcoded poses, detects base/self-collisions
-        for pose in hardcoded_poses:
-            env2.set_position(pose)
-            for _ in range(100):
-                p.stepSimulation()
-                time.sleep(1./240.)
-            print(f"Joint angles: {pose}")
-            if env2.check_collision():
-                print("Collision Detected")
-            else:
-                print("No collision")
-            input("Press Enter to continue")
-        env2.close()
+    env1.close()
+
+    # hardcoded self-collision cases
+    env2 = RosieEnvironment(use_self_collision=True)
+    env2.set_position(env2.home_pose)
+
+    hardcoded_poses = [
+        # base collision
+        np.array([-1.15856693, -2.30733897, -3.02441003, 2.19252047, 0.30061921, 0.53673647]),
+        # self-collision
+        np.array([ 1.14554257,  2.61773381,  0.52162371, -1.72336358,  0.99948211,  2.05014016]),
+        np.array([ 1.72623365,  2.92676335,  2.82157851, -2.15210368,  1.0023865,   1.88599717]),
+    ]
+
+    for pose in hardcoded_poses:
+        env2.set_position(pose)
+        for _ in range(1):
+            p.stepSimulation()
+            time.sleep(1. / 240.)
+        print(f"Joint angles: {pose}")
+        if env2.check_collision():
+            print("Collision Detected")
+        else:
+            print("No collision")
+        input("Press Enter to continue")
+
+    env2.close()
+
+    # block grasping demo
+    env3 = RosieEnvironment(use_self_collision=False, spawn_block=True)
+
+    # start with 
+    env3.set_position(env3.home_pose)
+    for _ in range(100):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+
+    # hover above block
+    hover_position = np.array([0.2717, -0.0342, 0.10])
+    hover_angles = env3.get_ik(hover_position)
+    print(hover_angles)
+    env3.set_position(hover_angles)
+    for _ in range(100):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+
+    # descend to grasp position
+    block_position = np.array([0.2717, -0.0342, 0.001])
+    block_angles = env3.get_ik(block_position)
+    env3.set_position(block_angles)
+    for _ in range(100):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+
+    # close gripper
+    env3.set_gripper(0.3)
+    for _ in range(240):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+
+    # lift block
+    env3.goto_cartesian(hover_position, duration=2.0)
+    for _ in range(240):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
