@@ -9,7 +9,7 @@ class RosieGymEnv(gym.Env):
         super().__init__()
 
         # create the underlying simulation
-        self.robot = RosieEnvironment(use_self_collision=False, show=render, spawn_block=True)
+        self.robot = RosieEnvironment(use_self_collision=True, show=render, spawn_block=True)
 
         # how many physics ticks per step()
         self.ticks_per_step = 10
@@ -29,18 +29,32 @@ class RosieGymEnv(gym.Env):
         self.cam_width = 84
         self.cam_height = 84
         
-        # fixed overhead camera looking down at the workspace
-        self.view_matrix = p.computeViewMatrix(
-            cameraEyePosition=[0.5, 0, 0.8],
-            cameraTargetPosition=[0.3, 0, 0.2],
-            cameraUpVector=[0, 0, 1]
-        )
-
         # defines field of view and clipping range
         self.proj_matrix = p.computeProjectionMatrixFOV(
-            fov=60, aspect=self.cam_width / self.cam_height,
-            nearVal=0.1, farVal=2.0
+            fov=120, aspect=self.cam_width / self.cam_height,
+            nearVal=0.001, farVal=2.0
         )
+
+        self.collision_penalty = 3.0
+
+    def _get_camera_view_matrix(self):
+        link_state = p.getLinkState(self.robot.robot_id, 11, computeForwardKinematics=True)
+        raw_eye_pos = np.array(link_state[4])
+        orientation = link_state[5]
+
+        rot_matrix = np.array(p.getMatrixFromQuaternion(orientation)).reshape(3, 3)
+        forward_dir = rot_matrix[:, 2]
+        up_dir = rot_matrix[:, 1]
+
+        eye_pos = raw_eye_pos - up_dir * 0.06 + forward_dir * 0.07
+        target_pos = eye_pos + forward_dir * 0.1
+
+        return p.computeViewMatrix(
+            cameraEyePosition=eye_pos,
+            cameraTargetPosition=target_pos,
+            cameraUpVector=up_dir
+        )
+        
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -50,6 +64,8 @@ class RosieGymEnv(gym.Env):
         return obs, {}
     
     def _get_obs(self):
+
+        self.view_matrix = self._get_camera_view_matrix()
         # capture RGB image from synthetic camera and discard width, height, depth, segmentation
         _, _, rgb, _, _ = p.getCameraImage(
             width=self.cam_width, height=self.cam_height,
@@ -85,7 +101,12 @@ class RosieGymEnv(gym.Env):
         block_pos = np.array(p.getBasePositionAndOrientation(self.robot.block_id)[0])
         goal_pos = np.array([0.4, 0.1, 0.02]) # hardcoded goal position
         distance = np.linalg.norm(block_pos - goal_pos)
-        return -distance
+        reward = -distance
+    
+        if self.robot.check_collision(block_id=self.robot.block_id):
+            reward -=self.collision_penalty
+
+        return reward
     
     def close(self):
         self.robot.close()
