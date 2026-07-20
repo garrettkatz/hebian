@@ -70,7 +70,8 @@ class RosieGymEnv(gym.Env):
         _, _, rgb, _, _ = p.getCameraImage(
             width=self.cam_width, height=self.cam_height,
             viewMatrix=self.view_matrix,
-            projectionMatrix=self.proj_matrix
+            projectionMatrix=self.proj_matrix,
+            renderer=p.ER_BULLET_HARDWARE_OPENGL
         )
         # reshape flat array to (H, W, 4) and drop alpha channel
         image = np.array(rgb, dtype=np.uint8).reshape(self.cam_height, self.cam_width, 4)[:, :, :3]

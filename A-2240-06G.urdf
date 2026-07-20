@@ -14,7 +14,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J1/body">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -22,7 +22,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -47,7 +47,7 @@
     <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="bracket_1">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2221-01-Outside.stl" scale="0.001 0.001 0.001"/>
@@ -55,7 +55,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -79,7 +79,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J2/body">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -87,7 +87,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -113,7 +113,7 @@
   </joint>
   <link name="link_1">
     <!-- Input Cap -->
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
@@ -121,7 +121,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -129,7 +129,7 @@
       </geometry>
     </collision>
     <!-- Link Pipe -->
-    <visual>
+    <!-- visual>
       <origin rpy="0 1.57075 0" xyz="0.1625 0 0.02"/>
       <geometry>
         <cylinder length="0.29960000000000003" radius=".016"/>
@@ -137,14 +137,14 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 1.57075 0" xyz="0.1625 0 0.02"/>
       <geometry>
         <cylinder length="0.29960000000000003" radius=".016"/>
       </geometry>
     </collision>
-    <visual>
+    <!--visual>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
@@ -152,7 +152,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
@@ -176,7 +176,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J3/body">
-    <visual>
+    <!--visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -184,7 +184,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -210,7 +210,7 @@
   </joint>
   <link name="link_2">
     <!-- Input Cap -->
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2038-02.stl" scale="0.001 0.001 0.001"/>
@@ -218,7 +218,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -226,7 +226,7 @@
       </geometry>
     </collision>
     <!-- Link Pipe -->
-    <visual>
+    <!-- visual>
       <origin rpy="0 1.57075 0" xyz="0.1625 0 0.02"/>
       <geometry>
         <cylinder length="0.29960000000000003" radius=".016"/>
@@ -234,14 +234,14 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 1.57075 0" xyz="0.1625 0 0.02"/>
       <geometry>
         <cylinder length="0.29960000000000003" radius=".016"/>
       </geometry>
     </collision>
-    <visual>
+    <!-- visual>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2039-02.stl" scale="0.001 0.001 0.001"/>
@@ -249,7 +249,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="3.141592653589793 0 0" xyz="0.325 -2.4492935982947064e-18 0.0"/>
       <geometry>
@@ -273,7 +273,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J4/body">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -281,7 +281,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -338,7 +338,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J5/body">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -346,7 +346,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -371,7 +371,7 @@
     <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="bracket_3">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/A-2220-01.stl" scale="0.001 0.001 0.001"/>
@@ -379,7 +379,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -403,7 +403,7 @@
   </joint>
   <!-- Link definition -->
   <link name="J6/body">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="hebi_description/meshes/R8.stl" scale="0.001 0.001 0.001"/>
@@ -411,7 +411,7 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -818,7 +818,7 @@
     <limit effort="1000.0" lower="-1.5707963267948966" upper="0" velocity="1000.0"/>
   </joint>
   <link name="end_effector_1/l_inner_linkage">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
         <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
@@ -826,11 +826,11 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <box size="0.01 0.005 0.04"/>
       </geometry>
     </collision>
     <inertial>
@@ -850,7 +850,7 @@
     <mimic joint="end_effector_1/input_l_finger" multiplier="1.0"/>
   </joint>
   <link name="end_effector_1/r_inner_linkage">
-    <visual>
+    <!-- visual>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
         <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
@@ -858,11 +858,11 @@
       <material name="black">
         <color rgba="0.1 0.1 0.1 1"/>
       </material>
-    </visual>
+    </visual> -->
     <collision>
       <origin rpy="0 0 0" xyz="-0.0115 -0.004 -0.004"/>
       <geometry>
-        <mesh filename="hebi_description/meshes/PM-2359-02.stl" scale="0.001 0.001 0.001"/>
+        <box size="0.01 0.005 0.04"/>
       </geometry>
     </collision>
     <inertial>
