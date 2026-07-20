@@ -3,22 +3,23 @@ import pybullet as p
 from rosie_gym_env import RosieGymEnv
 
 
-def reset_episode_state(env, block_pos, gripper_open=-1.0, settle_steps=150):
+def reset_episode_state(env, block_pos, gripper_open=0.0, settle_steps=150, verbose=False):
     """
-    env.reset() only re-homes the arm joints, doesn't touch the block or
-    gripper. just repositioning the block wasn't enough - pybullet's
-    contact state kept carrying over episode to episode (slip crept up,
-    grasps got less reliable the longer a run went).
+    Reset the gripper, respawn the block, and settle the simulation.
+    """
+    # reset gripper joints
+    for joint in [16, 20]:
+        p.resetJointState(env.robot.robot_id, joint, gripper_open, targetVelocity=0.0)
 
-    fix: fully respawn the block (remove + reload urdf) every episode.
-    reapplies the same friction values from spawn_block in rosie_sim.py.
-    """
     env.robot.set_gripper(gripper_open)
     for _ in range(settle_steps):
         p.stepSimulation()
 
     p.removeBody(env.robot.block_id)
     env.robot.block_id = p.loadURDF("cube_small.urdf", basePosition=block_pos)
+    pos, orn = p.getBasePositionAndOrientation(env.robot.block_id)
+    if verbose:
+        print(p.getEulerFromQuaternion(orn))
     p.changeDynamics(env.robot.block_id, -1, lateralFriction=1000.0)
     p.changeDynamics(env.robot.robot_id, 16, lateralFriction=1000.0)
     p.changeDynamics(env.robot.robot_id, 20, lateralFriction=1000.0)
@@ -27,20 +28,15 @@ def reset_episode_state(env, block_pos, gripper_open=-1.0, settle_steps=150):
         p.stepSimulation()
 
 
-# drives the arm toward a joint target using env.step() so every frame we
-# record is a real (obs, action) pair, same format the policy will use later
-def move_to_via_env(env, target_angles, max_steps=200, tol=0.01, log=None):
+def move_to_via_env(env, target_angles, max_steps=200, tol=0.01, log=None, verbose=False):
     """
-    steps env toward target_angles bit by bit, logging (obs, action) pairs
-    along the way. clips each delta to the action space bounds (+-0.05 rad)
-    and stops early once every joint is within tol.
+    Move to target joint angles while logging observations and actions.
     """
-    obs = env._get_obs()  # just reads current obs, no step needed here
-
+    obs = env._get_obs()
     low = env.action_space.low
     high = env.action_space.high
 
-    for _ in range(max_steps):
+    for step in range(max_steps):
         current = env.robot.get_position()
         raw_delta = target_angles - current
 
@@ -53,92 +49,138 @@ def move_to_via_env(env, target_angles, max_steps=200, tol=0.01, log=None):
             log["images"].append(obs["image"])
             log["joints"].append(obs["joints"])
             log["actions"].append(action)
+            log["rewards"].append(env._compute_reward())
 
-        obs, _, _, _, _ = env.step(action)
+            obs, _, _, _, _ = env.step(action)
+    else:
+        if verbose:
+            final_delta = np.abs(target_angles - env.robot.get_position()).max()
+            print(f"  move_to_via_env: hit max_steps={max_steps} without converging, final_delta={final_delta:.4f}")
 
     return obs
 
 
-def move_cartesian_via_env(env, target_pos, num_waypoints=15, max_steps_per_wp=40,
-                            tol=0.01, log=None):
+def move_cartesian_via_env(env, target_pos, num_waypoints=15, max_steps_per_wp=100,
+                            tol=0.01, log=None, min_z=0.015, cartesian_tol=0.01, verbose=False):
     """
-    goto_cartesian keeps the gripper path straight by solving ik at every
-    small cartesian step. jumping straight to one joint-space target
-    doesn't do that - the gripper can swing sideways and clip the block on
-    the way down. this does the same straight-line approach but through
-    env.step() so it still logs as real (obs, action) pairs.
+    Move through Cartesian waypoints using IK while logging data.
     """
     start_pos = np.array(p.getLinkState(env.robot.robot_id, env.robot.end_effector_link)[0])
     target_pos = np.array(target_pos)
+    if target_pos[2] < min_z:
+        target_pos[2] = min_z
 
     obs = env._get_obs()
     for i in range(1, num_waypoints + 1):
         t = i / num_waypoints
         interp_pos = (1 - t) * start_pos + t * target_pos
         wp_angles = env.robot.get_ik(interp_pos)
-        obs = move_to_via_env(env, wp_angles, max_steps=max_steps_per_wp, tol=tol, log=log)
+
+        if verbose:
+            check_transform = np.eye(4)
+            env.robot.arm_model.get_end_effector(wp_angles, check_transform)
+            print(f"waypoint {i}: requested_z={interp_pos[2]:.4f}  ik_solution_fk_z={check_transform[2,3]:.4f}")
+
+        obs = move_to_via_env(env, wp_angles, max_steps=max_steps_per_wp, tol=tol, log=log, verbose=verbose)
+
+        left_finger_pos = np.array(p.getLinkState(env.robot.robot_id, 16)[0])
+        right_finger_pos = np.array(p.getLinkState(env.robot.robot_id, 20)[0])
+        achieved_pos = (left_finger_pos + right_finger_pos) / 2.0
+        cartesian_error = np.linalg.norm(achieved_pos - interp_pos)
+        if cartesian_error > cartesian_tol:
+            if verbose:
+                print(f"  waypoint {i}: cartesian_error={cartesian_error:.4f}m exceeds tol={cartesian_tol}, "
+                      f"re-solving IK from current position")
+            wp_angles_retry = env.robot.get_ik(interp_pos)
+            obs = move_to_via_env(env, wp_angles_retry, max_steps=max_steps_per_wp, tol=tol, log=log, verbose=verbose)
+
+        if i == num_waypoints and verbose:
+            final_left = np.array(p.getLinkState(env.robot.robot_id, 16)[0])
+            final_right = np.array(p.getLinkState(env.robot.robot_id, 20)[0])
+            final_finger_pos = (final_left + final_right) / 2.0
+            print(f"final waypoint check: intended_z={interp_pos[2]:.4f}  achieved_finger_z={final_finger_pos[2]:.4f}  "
+                  f"overshoot={final_finger_pos[2] - interp_pos[2]:.4f}")
 
     return obs
 
 
-# full pick-and-lift episode. place-move can get bolted on later the same
-# way, not doing that yet since it's out of scope for now
-def run_expert_episode(env, block_pos, hover_height=0.10, grasp_height=0.006,
-                        gripper_closed=0.65, gripper_settle_steps=240):
+def run_expert_episode(env, block_pos, hover_height=0.15, grasp_height=0.08,
+                        gripper_closed=0.9, gripper_settle_steps=240, verbose=False):
     """
-    runs one grasp-and-lift demo, returns {"images", "joints", "actions"}
-    logged at every step the arm moves. gripper open/close isn't part of
-    the action space so those ticks aren't logged.
+    Run one expert grasp-and-lift episode and return logged data.
     """
-    log = {"images": [], "joints": [], "actions": []}
+    log = {"images": [], "joints": [], "actions": [], "rewards": []}
 
     obs, _ = env.reset()
-    # reset_to_home() teleports the joints but doesn't cancel the previous
-    # episode's motor command, which keeps tugging the arm during later
-    # steps. reissuing a real position command to home_pose fixes it.
     env.robot.set_joint_targets(env.robot.home_pose)
     for _ in range(50):
         p.stepSimulation()
-    reset_episode_state(env, block_pos)
+    reset_episode_state(env, block_pos, verbose=verbose)
 
     hover_pos = np.array([block_pos[0], block_pos[1], hover_height])
     grasp_pos = np.array([block_pos[0], block_pos[1], grasp_height])
 
-    # hover above the block, straight line in cartesian space
-    move_cartesian_via_env(env, hover_pos, log=log)
-    hover_angles = env.robot.get_ik(hover_pos)  # need this again later for the lift
+    move_cartesian_via_env(env, hover_pos, log=log, verbose=verbose)
+    hover_angles = env.robot.get_ik(hover_pos)
 
-    # descend to grasp height, also straight line
-    # (stops it from swinging sideways into the block on the way down)
-    move_cartesian_via_env(env, grasp_pos, log=log)
+    move_cartesian_via_env(env, grasp_pos, log=log, verbose=verbose)
 
-    # close the gripper - direct sim call, not something the env logs as an action
     block_z_before = p.getBasePositionAndOrientation(env.robot.block_id)[0][2]
-    env.robot.set_gripper(gripper_closed)
-    for _ in range(gripper_settle_steps):
-        p.stepSimulation()
+    gripper_pos = np.array(p.getLinkState(env.robot.robot_id, env.robot.end_effector_link)[0])
+    left_finger_pos = np.array(p.getLinkState(env.robot.robot_id, 16)[0])
+    right_finger_pos = np.array(p.getLinkState(env.robot.robot_id, 20)[0])
+    if verbose:
+        print(f"after descent: gripper_z={gripper_pos[2]:.4f} left_z={left_finger_pos[2]:.4f} "
+              f"right_z={right_finger_pos[2]:.4f} target grasp_height={grasp_height}")
 
-    # lift back to hover height. env.step() doesn't reapply gripper force
-    # each tick like goto_cartesian does, so _lift_with_gripper_held
-    # handles that manually.
-    _, slip_detected, max_slip = _lift_with_gripper_held(env, hover_angles, gripper_closed, log)
+    env.robot.set_gripper(gripper_closed)
+    for step in range(gripper_settle_steps):
+        p.stepSimulation()
+        if verbose and step % 60 == 0:
+            block_z = p.getBasePositionAndOrientation(env.robot.block_id)[0][2]
+            print(f"  closing step {step}: block_z={block_z:.4f}")
+
+    contacts_left = p.getContactPoints(env.robot.robot_id, env.robot.block_id, 16)
+    contacts_right = p.getContactPoints(env.robot.robot_id, env.robot.block_id, 20)
+    if verbose:
+        print(f"pre-lift contacts: left={len(contacts_left)} right={len(contacts_right)}")
+        for c in contacts_left + contacts_right:
+            print(f"    contact normal: {c[7]}")
+    all_contacts = p.getContactPoints(bodyA=env.robot.robot_id, bodyB=env.robot.block_id)
+
+    # group contacts by left and right finger
+    contacts_left = [c for c in all_contacts if c[3] < 20]
+    contacts_right = [c for c in all_contacts if c[3] >= 20]
+
+    max_penetration = 0.0
+    for c in all_contacts:
+        if c[8] < max_penetration:
+            max_penetration = c[8]
+
+    if verbose:
+        print(f"max_penetration={max_penetration:.4f}m")
+
+    _, slip_detected, max_slip = _lift_with_gripper_held(env, hover_angles, gripper_closed, log, verbose=verbose)
 
     block_z_after = p.getBasePositionAndOrientation(env.robot.block_id)[0][2]
-    # if the grip actually held, the block should be up near hover_height
-    # by now. if it didn't, block_z_after will still be sitting near table height
-    grip_success = (block_z_after - block_z_before) > (hover_height * 0.5)
+    if verbose:
+        print(f"block_z_before={block_z_before:.4f}  block_z_after={block_z_after:.4f}  diff={block_z_after-block_z_before:.4f}")
+
+    PENETRATION_LIMIT = -0.005  # 5mm
+    height_ok = (block_z_after - block_z_before) > (hover_height * 0.3)
+    penetration_ok = max_penetration > PENETRATION_LIMIT
+    grip_success = height_ok and penetration_ok
+
+    if verbose and height_ok and not penetration_ok:
+        print(f"  -> height check passed but penetration too deep ({max_penetration:.4f}m), rejecting")
 
     return log, grip_success, slip_detected, max_slip
 
 
 def _lift_with_gripper_held(env, target_angles, gripper_value, log,
-                             max_steps=200, tol=0.01, slip_threshold=0.01):
+                             max_steps=200, tol=0.01, slip_threshold=0.01, verbose=False):
     """
-    same as move_to_via_env, but keeps reapplying gripper force every tick
-    during the lift (env.step() alone doesn't do that). also tracks the
-    block's position relative to the gripper each tick - a solid grip
-    keeps that offset steady, a slip shows up as a jump even if it gets
-    "caught" again right after.
+    Lift while holding the gripper closed and detect block slip.
     """
     obs = env._get_obs()
     low = env.action_space.low
@@ -164,11 +206,12 @@ def _lift_with_gripper_held(env, target_angles, gripper_value, log,
         log["images"].append(obs["image"])
         log["joints"].append(obs["joints"])
         log["actions"].append(action)
+        log["rewards"].append(env._compute_reward())
 
         target = current + action
         env.robot.set_joint_targets(target)
         for _ in range(env.ticks_per_step):
-            env.robot.set_gripper(gripper_value)  # keep holding grip force during the move
+            env.robot.set_gripper(gripper_value)
             p.stepSimulation()
 
             rel = _relative_block_pos()
@@ -176,18 +219,64 @@ def _lift_with_gripper_held(env, target_angles, gripper_value, log,
             max_slip = max(max_slip, tick_slip)
             if tick_slip > slip_threshold:
                 slip_detected = True
+                if verbose:
+                    print(f"  slip spike: tick_slip={tick_slip:.4f} at rel_pos={rel}")
             prev_rel = rel
 
         obs = env._get_obs()
 
     return obs, slip_detected, max_slip
 
+def split_train_test(data_path="expert_data.npz", train_path="expert_data_train.npz",
+                      test_path="expert_data_test.npz", test_fraction=0.2, seed=42):
+    """
+    Split the dataset into train and test sets by episode.
+    """
+    data = np.load(data_path)
 
-# main collection loop
-def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False):
+    images = data["images"]
+    joints = data["joints"]
+    actions = data["actions"]
+    rewards = data["rewards"]
+    episode_ids = data["episode_ids"]
+    ep_block_x = data["ep_block_x"]
+    ep_block_y = data["ep_block_y"]
+    ep_success = data["ep_success"]
+    ep_max_slip = data["ep_max_slip"]
+
+    # split only successful episodes
+    successful_ep_nums = np.unique(episode_ids)
+
+    rng = np.random.default_rng(seed)
+    shuffled = rng.permutation(successful_ep_nums)
+    n_test = max(1, int(len(shuffled) * test_fraction))
+    test_eps = set(shuffled[:n_test])
+    train_eps = set(shuffled[n_test:])
+
+    def _build_split(ep_set):
+        mask = np.isin(episode_ids, list(ep_set))
+        return {
+            "images": images[mask],
+            "joints": joints[mask],
+            "actions": actions[mask],
+            "rewards": rewards[mask],
+            "episode_ids": episode_ids[mask],
+        }
+
+    train_data = _build_split(train_eps)
+    test_data = _build_split(test_eps)
+
+    np.savez_compressed(train_path, **train_data)
+    np.savez_compressed(test_path, **test_data)
+
+    print(f"split {len(successful_ep_nums)} successful episodes: "
+          f"{len(train_eps)} train ({len(train_data['actions'])} transitions), "
+          f"{len(test_eps)} test ({len(test_data['actions'])} transitions)")
+
+def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False, verbose=False):
     env = RosieGymEnv(render=render)
 
-    all_images, all_joints, all_actions, episode_ids = [], [], [], []
+    all_images, all_joints, all_actions, all_rewards, episode_ids = [], [], [], [], []
     ep_block_x, ep_block_y, ep_success, ep_max_slip = [], [], [], []
     rng = np.random.default_rng()
 
@@ -197,6 +286,7 @@ def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False):
             images=np.array(all_images, dtype=np.uint8),
             joints=np.array(all_joints, dtype=np.float32),
             actions=np.array(all_actions, dtype=np.float32),
+            rewards=np.array(all_rewards, dtype=np.float32),
             episode_ids=np.array(episode_ids, dtype=np.int32),
             ep_block_x=np.array(ep_block_x, dtype=np.float32),
             ep_block_y=np.array(ep_block_y, dtype=np.float32),
@@ -208,17 +298,15 @@ def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False):
 
     try:
         for ep in range(num_episodes):
-            # small +-1cm jitter instead of a truly fixed spot. sim is fully
-            # deterministic given the same inputs, and using an exact fixed
-            # position kept locking into the same repeated failure after a
-            # handful of episodes. this breaks that up cheaply and is also
-            # basically the first step toward real position randomization later
-            jitter = rng.uniform(-0.01, 0.01, size=2)
-            block_pos = np.array([0.2717 + jitter[0], -0.0342 + jitter[1], 0.02])
+            # sample a random block position
+            x = rng.uniform(0.22, 0.32)
+            y = rng.uniform(-0.08, 0.02)
+            block_pos = np.array([x, y, 0.02])
 
-            log, grip_success, slip_detected, max_slip = run_expert_episode(env, block_pos)
+            log, grip_success, slip_detected, max_slip = run_expert_episode(env, block_pos, verbose=verbose)
 
             n = len(log["actions"])
+            # print episode summary
             print(f"episode {ep}: {n} steps logged, grip_success={grip_success}, "
                   f"slip_detected={slip_detected}, max_slip={max_slip:.4f}m")
 
@@ -234,11 +322,9 @@ def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False):
             all_images.extend(log["images"])
             all_joints.extend(log["joints"])
             all_actions.extend(log["actions"])
+            all_rewards.extend(log["rewards"])
             episode_ids.extend([ep] * n)
 
-            # saving after every successful episode instead of waiting til
-            # the end - lost a couple full runs already to ctrl+c / running
-            # the wrong command, so now each success is safe on disk right away
             _save()
 
     except KeyboardInterrupt:
@@ -249,4 +335,8 @@ def collect_dataset(num_episodes=10, save_path="expert_data.npz", render=False):
 
 
 if __name__ == "__main__":
-    collect_dataset(num_episodes=25, save_path="expert_data.npz", render=False)
+    collect_dataset(num_episodes=150, save_path="expert_data.npz", render=True, verbose=False)
+    split_train_test(data_path="expert_data.npz",
+                      train_path="expert_data_train.npz",
+                      test_path="expert_data_test.npz",
+                      test_fraction=0.2)
